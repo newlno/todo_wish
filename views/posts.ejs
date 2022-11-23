@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+      integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
+      crossorigin="anonymous"
+    />
+
+    <title>Hello, world!</title>
+  </head>
+  <body>
+    <%- include("nav.html") %>
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-4">리스트 페이지</h1>
+        <p class="lead">
+          This is a modified jumbotron that occupies the entire horizontal space
+          of its parent.
+        </p>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="container">
+      <ul class="list-group">
+        <% posts.forEach((result,index)=>{ %>
+        <li class="list-group-item justify-content-between align-items-center">
+          <h4 style="display: inline-block">
+            무언가 나옵니다! -> <%= result.title %>
+          </h4>
+          <p class="badge badge-primary badge-pill">14</p>
+          <p>마감일 나옵니다! -> <%= result.day %></p>
+          <button
+            type="button"
+            class="btn btn-danger"
+            class="delete"
+            data-id="<%= result._id %>"
+          >
+            상세보기
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            class="delete"
+            data-id="<%= result._id %>"
+          >
+            삭제하기
+          </button>
+        </li>
+        <% }) %>
+      </ul>
+    </div>
+    <script>
+      $(".delete").click(function (dataId) {
+        $.ajax({
+          method: "delete",
+          url: "/posts",
+          data: { _id: dataId.target.dataset.id },
+        })
+          .done((result) => {
+            console.log("ajax 성공");
+            $(this).parent("li").fadeOut();
+          })
+          .fail((fail) => {
+            console.log("ajax 실패");
+          });
+      });
+    </script>
+  </body>
+</html>
