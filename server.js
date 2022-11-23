@@ -138,7 +138,7 @@ app.post(
     res.redirect("/");
   }
 );
-
+// 로그인 유저정보 검증
 passport.use(
   new LocalStrategy(
     {
