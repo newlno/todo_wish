@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="/">Todo Page</a>
+  <a class="navbar-brand" href="/">todo_wish</a>
   <button
     class="navbar-toggler"
     type="button"
@@ -18,12 +18,27 @@
           >Home <span class="sr-only">(current)</span></a
         >
       </li>
+      <!-- <li class="nav-item">
+          <a class="nav-link" href="/posts">post</a>
+        </li> -->
       <li class="nav-item">
-        <a class="nav-link" href="/posts">post</a>
+        <a class="nav-link" href="/write">write</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">임시</a>
+        <a class="nav-link" href="/chat">chat</a>
       </li>
+      <% if(isAuthenticated){ %>
+      <li class="nav-item">
+        <a class="nav-link" href="/login">logOut</a>
+      </li>
+      <% } else { %>
+      <li class="nav-item">
+        <a class="nav-link" href="/login">login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/signup">signup</a>
+      </li>
+      <% } %>
     </ul>
   </div>
 </nav>
