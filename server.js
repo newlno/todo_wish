@@ -9,9 +9,14 @@ const session = require("express-session");
 const { Code } = require("mongodb");
 const { ObjectId } = require("mongodb");
 const { body, validationResult } = require("express-validator");
+//메일
+const mailer = require("nodemailer");
+const mailAddress = process.env.MAILADDRESS;
+const mailPassword = process.env.MAILPASSWORD;
 //소켓
 const http = require("http").createServer(app);
 const { Server } = require("socket.io");
+const { Template } = require("ejs");
 const io = new Server(http);
 var db;
 
@@ -70,10 +75,6 @@ function loginCheck(req, res, next) {
     );
   }
 }
-
-// app.get("/", (req, res) => {
-//   res.render("index.ejs");
-// });
 
 app.get("/login", (req, res) => {
   if (req.user) {
@@ -252,6 +253,92 @@ passport.use(
     }
   )
 );
+
+const email = {
+  host: "smtp.naver.com",
+  post: 465,
+  secure: false,
+  auth: {
+    user: mailAddress,
+    pass: mailPassword,
+  },
+};
+
+const send = async (data) => {
+  mailer.createTransport(email).sendMail(data, function (error, info) {
+    console.log(email);
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(info);
+      return info.response;
+    }
+  });
+};
+
+app.post(
+  "/signup/check/email",
+  body("email").trim().notEmpty().isEmail(),
+  (req, res) => {
+    console.log("메일인증 리퀘", req.body);
+    const errors = validationResult(req.body.email);
+    console.log("메일 중복 에러", errors);
+    if (!errors.isEmpty()) {
+      return res.send("404");
+    } else {
+      db.collection("user").findOne(
+        { email: req.body.email },
+        (error, result) => {
+          console.log("리졀뜨", result);
+          if (!result == null) {
+            res.send("overlap");
+          } else {
+            var deleteData = { email: req.body.email };
+            db.collection("authnum").deleteMany(deleteData);
+          }
+          const authNumber = Math.floor(Math.random() * 888888) + 111111;
+
+          const content = {
+            from: "todowish@naver.com",
+            to: req.body.email,
+            subject: "[todo_wish] 회원가입 인증메일",
+            text: `아래 인증번호를 확인하여 이메일 주소 인증을 완료해 주세요.\n
+              가입하신 이메일 👉 ${req.body.email}\n
+              인증번호 6자리 👉 ${authNumber}`,
+          };
+          send(content);
+          db.collection("authnum").insertOne(
+            {
+              email: req.body.email,
+              num: authNumber,
+            },
+            (error, result) => {
+              console.log(result);
+            }
+          );
+        }
+      );
+    }
+    res.send(true);
+  }
+);
+
+app.post("/signup/check/email/auth", (req, res) => {
+  console.log("인증번호응답", req.body);
+  db.collection("authnum").findOne(
+    { num: parseInt(req.body.authnum) },
+    (error, result) => {
+      console.log("리졀뜨", result);
+      if (result.num == parseInt(req.body.authnum)) {
+        var deleteData = { num: parseInt(req.body.authnum) };
+        db.collection("authnum").deleteOne(deleteData);
+        return res.send(true);
+      } else {
+        return res.send(false);
+      }
+    }
+  );
+});
 
 app.post(
   "/signup/check/id",

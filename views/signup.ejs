@@ -14,10 +14,14 @@
     <%- include("nav.html") %>
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-4">회원가입 페이지</h1>
-        <p class="lead">
-          This is a modified jumbotron that occupies the entire horizontal space
-          of its parent.
+        <h1 class="display-3">회원가입 페이지</h1>
+        <p class="lead">회원가입시 유의사항</p>
+        <p>1. 한개의 이메일로 한개의 계정만 생성 가능합니다.</p>
+        <p>2. 한개의 아이디로 한개의 계정만 생성 가능합니다.</p>
+        <p>3. 아이디는 영소문자,숫자로 구성된 4~20글자로 작성해주세요.</p>
+        <p>
+          4. 비밀번호는 영문대소문자,숫자,특수문자(!@#$%^&+=)로 구성된
+          6~20글자로 작성해주세요.
         </p>
       </div>
     </div>
@@ -29,11 +33,32 @@
           class="form-control email"
           name="email"
           id="email"
-          placeholder="쓰고싶은 말"
+          placeholder="메일 수신이 가능한 이메일을 입력해주세요."
         />
-        <button type="button" class="btn btn-primary mt-2" id="mailCheck">
-          인증받기
+
+        <button type="button" class="btn btn-primary mt-2 mb-2" id="mailCheck">
+          인증메일 받기
         </button>
+
+        <div
+          class="input-group mt-2 mb-4"
+          id="mailAddres"
+          style="display: none"
+        >
+          <div class="input-group-prepend">
+            <button class="btn btn-primary" type="button" id="mailAuth">
+              인증하기
+            </button>
+          </div>
+          <input
+            type="text"
+            class="form-control authnum"
+            id="addresInput"
+            placeholder="인증번호를 입력해주세요."
+            aria-label="Example text with button addon"
+            aria-describedby="button-addon1"
+          />
+        </div>
       </div>
 
       <div class="form-group-id mb-4">
@@ -45,7 +70,12 @@
           id="userId"
           placeholder="영소문자,숫자로 구성된 4~20글자로 작성해주세요."
         />
-        <button type="button" class="btn btn-primary mt-2" id="idCheck">
+        <button
+          type="button"
+          class="btn btn-primary mt-2"
+          id="idCheck"
+          disabled
+        >
           중복확인
         </button>
       </div>
@@ -57,11 +87,13 @@
           class="form-control pw"
           name="pw"
           id="pw"
-          placeholder="쓰고싶은 말"
+          placeholder="비밀번호는 영문대소문자,숫자,특수문자(!@#$%^&+=)로 구성된 6~20글자로 작성해주세요."
         />
         <!-- <input type="password" class="form-control" name="pw" /> -->
       </div>
-      <button type="button" class="btn btn-danger" id="signUp">가입하기</button>
+      <button type="button" class="btn btn-danger" id="signUp" disabled>
+        가입하기
+      </button>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
@@ -79,6 +111,51 @@
       var idval;
       var pwval;
       var emailval;
+      var authnum;
+
+      $("#mailCheck").click(function () {
+        emailval = $(".email").val();
+        if (emailval == "") {
+          alert("이메일을 입력해주세요.");
+        } else {
+          $.ajax({
+            method: "post",
+            url: "/signup/check/email",
+            data: { email: emailval },
+          }).done((result) => {
+            console.log("인증메일 에이젝 성공");
+            alert("인증메일을 발송했습니다.");
+            $("#mailCheck").hide();
+            $("#email").prop("readonly", true);
+            $("#mailAddres").show();
+          });
+        }
+      });
+
+      $("#mailAuth").click(function () {
+        authnum = $(".authnum").val();
+        if (authnum == "") {
+          alert("인증번호를 입력해주세요.");
+        } else {
+          $.ajax({
+            method: "post",
+            url: "/signup/check/email/auth",
+            data: { authnum: authnum },
+          }).done((result) => {
+            if (!result) {
+              alert("올바른 인증번호를 입력해주세요.");
+            } else {
+              console.log("인증번호 에이젝 성공");
+              alert("인증에 성공했습니다.");
+              $("#email").prop("readonly", true);
+              $("#addresInput").prop("readonly", true);
+              $("#idCheck").prop("disabled", false);
+              $("#mailAuth").prop("disabled", true);
+            }
+          });
+        }
+      });
+
       $("#idCheck").click(function () {
         idval = $(".userId").val();
         console.log("버튼이벤트", idval);
@@ -108,6 +185,7 @@
             alert("사용 가능한 아이디 입니다.");
             $("#idCheck").prop("disabled", true);
             $("#userId").prop("readonly", true);
+            $("#signUp").prop("disabled", false);
           } else {
             alert("이미 사용중인 아이디 입니다.");
           }
@@ -123,7 +201,7 @@
         console.log(emailval);
         if (!checkPw.test(pwval)) {
           alert(
-            "비밀번호는 영문대소문자,숫자,특수문자로 구성된 6~20글자로 작성해주세요."
+            "비밀번호는 영문대소문자,숫자,특수문자(!@#$%^&+=)로 구성된 6~20글자로 작성해주세요."
           );
         } else {
           $.ajax({
@@ -136,6 +214,7 @@
                 alert("정상적인 접근이 아닙니다.");
                 window.location.reload();
               }
+
               console.log("ajax 성공");
             })
             .fail((fail) => {
@@ -143,11 +222,6 @@
             });
         }
       });
-
-      //  $("#search").click(() => {
-      //   var inputData = $("#searchInput").val();
-      //   window.location.replace("/search?value=" + inputData);
-      // });
     </script>
   </body>
 </html>
