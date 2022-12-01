@@ -112,23 +112,33 @@
       var pwval;
       var emailval;
       var authnum;
+      var checkId = /^(?=.*[a-z])(?=.*[0-9])[a-z0-9]{4,12}$/;
+      var checkPw =
+        /^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{8,16}$/;
+      var checkMail =
+        /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
 
       $("#mailCheck").click(function () {
         emailval = $(".email").val();
         if (emailval == "") {
-          alert("이메일을 입력해주세요.");
-        } else {
+          return alert("이메일을 입력해주세요.");
+        } else if (emailval.match(checkMail)) {
           $.ajax({
             method: "post",
-            url: "/signup/check/email",
+            url: "/user/signup/check/email",
             data: { email: emailval },
           }).done((result) => {
+            if (result == "404") {
+              return alert("정상적인 접근이 아닙니다.");
+            }
             console.log("인증메일 에이젝 성공");
             alert("인증메일을 발송했습니다.");
             $("#mailCheck").hide();
             $("#email").prop("readonly", true);
             $("#mailAddres").show();
           });
+        } else {
+          return alert("올바른 이메일을 입력해주세요.");
         }
       });
 
@@ -139,11 +149,11 @@
         } else {
           $.ajax({
             method: "post",
-            url: "/signup/check/email/auth",
+            url: "/user/signup/check/email/auth",
             data: { authnum: authnum },
           }).done((result) => {
             if (!result) {
-              alert("올바른 인증번호를 입력해주세요.");
+              return alert("메일 인증 올바른 인증번호를 입력해주세요.");
             } else {
               console.log("인증번호 에이젝 성공");
               alert("인증에 성공했습니다.");
@@ -159,15 +169,10 @@
       $("#idCheck").click(function () {
         idval = $(".userId").val();
         console.log("버튼이벤트", idval);
-        const idvalcheck = /^[a-z0-9]+$/;
         if (idval == "") {
           alert("아이디를 입력해주세요.");
           return false;
-        } else if (
-          !idvalcheck.test(idval) ||
-          idval.length < 4 ||
-          idval.length > 20
-        ) {
+        } else if (!idval.match(checkId)) {
           alert("아이디는 영소문자,숫자로 구성된 4~20글자로 작성해주세요.");
           $("#userid").focus();
           return false;
@@ -175,7 +180,7 @@
         console.log(idval);
         $.ajax({
           method: "post",
-          url: "/signup/check/id",
+          url: "/user/signup/check/id",
           data: { userId: idval },
         }).done((result) => {
           console.log("에이젝스 결과", result);
@@ -193,31 +198,31 @@
       });
 
       $("#signUp").click(function () {
-        const checkPw =
-          /^.*(?=^.{6,20}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
         idval = $(".userId").val();
         pwval = $(".pw").val();
         emailval = $(".email").val();
-        console.log(emailval);
-        if (!checkPw.test(pwval)) {
+        if (!pwval.match(checkPw)) {
           alert(
             "비밀번호는 영문대소문자,숫자,특수문자(!@#$%^&+=)로 구성된 6~20글자로 작성해주세요."
           );
         } else {
           $.ajax({
             method: "post",
-            url: "/signup",
+            url: "/user/signup",
             data: { userId: idval, email: emailval, pw: pwval },
           })
             .done((result) => {
               if (result == "404") {
                 alert("정상적인 접근이 아닙니다.");
                 window.location.reload();
+              } else {
+                console.log("ajax 성공");
+                alert("회원가입이 성공했습니다.");
+                window.location.replace("/user/login");
               }
-
-              console.log("ajax 성공");
             })
             .fail((fail) => {
+              alert("정상적인 접근이 아닙니다.");
               console.log("ajax 실패");
             });
         }

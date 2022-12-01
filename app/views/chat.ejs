@@ -27,11 +27,11 @@
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
         <h1 class="display-4">채팅 페이지</h1>
-        <p class="lead">
-          <%= userId %> 님 환영합니다.
-          <p>This is a modified jumbotron that
-          occupies the entire horizontal space of its parent.
-        </p>
+        <p class="lead"><%= userId %> 님 환영합니다.</p>
+
+        <p>
+          This is a modified jumbotron that occupies the entire horizontal space
+          of its parent.
         </p>
       </div>
     </div>
@@ -59,7 +59,7 @@
           <ul class="list-group chat-list">
             <% data.forEach((result,index)=>{ %>
             <li
-              class="list-group-item"
+              class="list-group-item chatList"
               style="cursor: pointer"
               data-id="<%= result._id %>"
               data-user="<%= userId %>"
@@ -93,19 +93,19 @@
       referrerpolicy="no-referrer"
     ></script>
     <script>
-     var socket = io();
-     var roomId;
-     var userId;
+      var socket = io();
+      var roomId;
+      var userId;
 
-      $(".list-group-item").click(function() {
-        socket.disconnect()
-        socket.connect()
+      $(".chatList").click(function () {
+        socket.disconnect();
+        socket.connect();
         roomId = $(this).attr("data-id");
         userId = $(this).attr("data-user");
         console.log("클릭이벤트", roomId);
         $(".chat-content").html("");
-        socket.emit("joinRoom", {roomId : roomId, userId : userId});
-    })
+        socket.emit("joinRoom", { roomId: roomId, userId: userId });
+      });
 
       $("#send").click(() => {
         var data = {
@@ -128,7 +128,7 @@
             "</span></li>"
         );
       });
-
+      // SSE
       //   $.ajax({
       //       method: "get",
       //       url: "/socket",
