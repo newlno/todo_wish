@@ -8,13 +8,13 @@
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     />
-    <title>Document</title>
+    <title>todo_wish</title>
   </head>
   <body>
     <%- include("nav.html") %>
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-3">회원가입 페이지</h1>
+        <h1 class="display-3">todo_wish</h1>
         <p class="lead">회원가입시 유의사항</p>
         <p>1. 한개의 이메일로 한개의 계정만 생성 가능합니다.</p>
         <p>2. 한개의 아이디로 한개의 계정만 생성 가능합니다.</p>
@@ -131,7 +131,6 @@
             if (result == "404") {
               return alert("정상적인 접근이 아닙니다.");
             }
-            console.log("인증메일 에이젝 성공");
             alert("인증메일을 발송했습니다.");
             $("#mailCheck").hide();
             $("#email").prop("readonly", true);
@@ -155,7 +154,6 @@
             if (!result) {
               return alert("메일 인증 올바른 인증번호를 입력해주세요.");
             } else {
-              console.log("인증번호 에이젝 성공");
               alert("인증에 성공했습니다.");
               $("#email").prop("readonly", true);
               $("#addresInput").prop("readonly", true);
@@ -168,7 +166,6 @@
 
       $("#idCheck").click(function () {
         idval = $(".userId").val();
-        console.log("버튼이벤트", idval);
         if (idval == "") {
           alert("아이디를 입력해주세요.");
           return false;
@@ -183,7 +180,6 @@
           url: "/user/signup/check/id",
           data: { userId: idval },
         }).done((result) => {
-          console.log("에이젝스 결과", result);
           if (result == "404") {
             alert("정상적인 접근이 아닙니다.");
           } else if (result) {
@@ -216,14 +212,12 @@
                 alert("정상적인 접근이 아닙니다.");
                 window.location.reload();
               } else {
-                console.log("ajax 성공");
                 alert("회원가입이 성공했습니다.");
                 window.location.replace("/user/login");
               }
             })
             .fail((fail) => {
               alert("정상적인 접근이 아닙니다.");
-              console.log("ajax 실패");
             });
         }
       });

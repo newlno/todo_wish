@@ -7,13 +7,11 @@ module.exports = (app) => {
 
   //local-login 에서 받은 정보를 session 저장
   passport.serializeUser((user, done) => {
-    console.log("this is serialize : ", user);
     done(null, user.userId);
   });
 
   //각 페이지 들어갈때마다 보여지는 session
   passport.deserializeUser((sessionId, done) => {
-    console.log("this is deserialize :", sessionId);
     app.db
       .collection("user")
       .findOne({ userId: sessionId }, (error, result) => {

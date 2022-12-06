@@ -1,7 +1,9 @@
+const validator = require("../config/validator");
+const mail = require("../config/mail");
+
 class UserController {
   // 로그인 실행
   login = (req, res, next) => {
-    console.log("유저라우터 로그인 성공");
     res.redirect("/");
   };
 
@@ -38,20 +40,25 @@ class UserController {
 
   // 마이페이지 진입
   myPage = (req, res) => {
-    res.render("myPage.ejs", { user: req.user });
+    var sort = { _id: -1 };
+    req.app.db
+      .collection("post")
+      .find({ userId: req.user.userId })
+      .sort(sort)
+      .toArray()
+      .then((result) => {
+        res.render("myPage.ejs", { user: req.user, post: result });
+      });
   };
 
   // 회원가입 메일 인증번호 받기
   mailAuthNum = (req, res) => {
-    console.log("메일인증 리퀘", req.body);
-    if (!validator.checkMail(req.body.email)) {
-      console.log("메일 벨리실패 404");
+    if (!validator.check.checkMail(req.body.email)) {
       return res.send("404");
     } else {
       req.app.db
         .collection("user")
         .findOne({ email: req.body.email }, (error, result) => {
-          console.log("리졀뜨", result);
           if (!result == null) {
             res.send("overlap");
           } else {
@@ -60,16 +67,10 @@ class UserController {
           }
           const authNumber = Math.floor(Math.random() * 888888) + 111111;
           mail.snedMail(req, authNumber);
-          console.log("메일센드 지나가나요?");
-          req.app.db.collection("authnum").insertOne(
-            {
-              email: req.body.email,
-              num: authNumber,
-            },
-            (error, result) => {
-              console.log(result);
-            }
-          );
+          req.app.db.collection("authnum").insertOne({
+            email: req.body.email,
+            num: authNumber,
+          });
         });
     }
     res.send(true);
@@ -81,11 +82,9 @@ class UserController {
     if (isNaN(req.body.authnum)) {
       return res.send(false);
     }
-    console.log("인증번호응답", req.body);
     req.app.db
       .collection("authnum")
       .findOne({ num: req.body.authnum }, (error, result) => {
-        console.log("리졀뜨", result);
         if (result == null) {
           return res.send(false);
         } else if (result.num == parseInt(req.body.authnum)) {
@@ -100,15 +99,12 @@ class UserController {
 
   // 회원가입 아이디 중복확인
   checkId = (req, res) => {
-    console.log("응답", req.body);
-    if (!validator.checkId(req.body.userId)) {
-      console.log("아디 벨리실패 404");
+    if (!validator.check.checkId(req.body.userId)) {
       return res.send("404");
     } else {
       req.app.db
         .collection("user")
         .findOne({ userId: req.body.userId }, (error, result) => {
-          console.log("리졀뜨", result);
           if (result) {
             return res.send(false);
           } else {
@@ -121,9 +117,9 @@ class UserController {
   // 회원가입 최종 확인
   signup = (req, res) => {
     if (
-      !validator.checkMail(req.body.email) ||
-      !validator.checkId(req.body.userId) ||
-      !validator.checkPw(req.body.pw)
+      !validator.check.checkMail(req.body.email) ||
+      !validator.check.checkId(req.body.userId) ||
+      !validator.check.checkPw(req.body.pw)
     ) {
       return res.send("404");
     } else {
@@ -140,7 +136,6 @@ class UserController {
                 email: req.body.email,
               },
               (error, result) => {
-                console.log(result);
                 return res.send(true);
               }
             );

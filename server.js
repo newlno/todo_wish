@@ -6,14 +6,14 @@ const session = require("express-session");
 
 //db
 const MongoClient = require("mongodb").MongoClient;
-// const { ObjectId } = require("mongodb");
+const { ObjectId } = require("mongodb");
 var db;
 
 //소켓
 const http = require("http").createServer(app);
 const { Server } = require("socket.io");
-const socket = require("./app/config/socket");
-socket(Server, http);
+const socket = require("./socket");
+socket(Server, http, app);
 
 //session
 app.use(
@@ -30,7 +30,7 @@ app.set("views", "./app/views");
 app.set("view engine", "ejs");
 app.use(express.json());
 app.use(methodOverride("_method"));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use("/public", express.static("public"));
 
 // DB & server_On

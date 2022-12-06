@@ -1,24 +1,35 @@
-module.exports = (Server, http) => {
+module.exports = (Server, http, app) => {
+  // const express = require("express");
+  // const app = express();
+  const dayjs = require("dayjs");
   const io = new Server(http);
-  io.on("connection", (socket) => {
-    console.log("소켓접속됨");
 
+  io.on("connection", (socket) => {
     socket.on("joinRoom", (data) => {
-      console.log("서버조인", data);
       socket.join(data.roomId);
     });
 
     socket.on("userSend", (data) => {
-      console.log(data.roomId + "에 보내기", data);
-      console.log(data.message);
       var resData = {
         roomId: data.roomId,
         message: data.message,
         userId: data.userId,
+        date: dayjs().format("YYYY. MM. DD. HH:mm:ss"),
       };
+      dbInsert(resData);
       io.to(data.roomId).emit("broadcast", resData);
     });
   });
+
+  function dbInsert(resData) {
+    app.db
+      .collection("message")
+      .insertOne(resData)
+      .catch((error) => {
+        console.error(error);
+        return "error";
+      });
+  }
 };
 
 // SSE 몽고

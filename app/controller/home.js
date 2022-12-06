@@ -1,15 +1,20 @@
 class HomeController {
   // 홈 화면
   home = (req, res) => {
+    var sort = { _id: -1 };
     req.app.db
       .collection("post")
       .find()
-      .toArray((error, result) => {
-        console.log(result);
+      .sort(sort)
+      .toArray()
+      .then((result) => {
         if (!req.user) {
           res.render("posts.ejs", { posts: result, status: "none" });
         } else {
-          res.render("posts.ejs", { posts: result, userId: req.user.userId });
+          res.render("posts.ejs", {
+            posts: result,
+            userId: req.user.userId,
+          });
         }
       });
   };
@@ -28,12 +33,10 @@ class HomeController {
       },
       { $project: { title: 1, _id: 0, score: { $meta: "searchScore" } } },
     ];
-    console.log(req.query.value);
     req.app.db
       .collection("post")
       .aggregate(searchCondition)
       .toArray((error, result) => {
-        console.log(result);
         res.render("search.ejs", { posts: result });
       });
   };

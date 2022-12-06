@@ -16,17 +16,16 @@
       crossorigin="anonymous"
     />
 
-    <title>Hello, world!</title>
+    <title>todo_wish</title>
   </head>
   <body>
     <%- include("nav.html") %>
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-4">마이 페이지</h1>
-        <p class="lead">
-          This is a modified jumbotron that occupies the entire horizontal space
-          of its parent.
-        </p>
+        <h1 class="display-4"><%= user.userId%>님 환영합니다.</h1>
+        <p><%= user.userId%>님의 마이페이지 입니다.</p>
+        <p>1. 내가 작성한 글 목록에서 삭제와 상세보기가 가능합니다.</p>
+        <p>2. 로그아웃은 항상 마이페이지를 통해 진행해주셔야 합니다.</p>
       </div>
     </div>
     <div class="card container">
@@ -60,6 +59,41 @@
         로그아웃
       </button>
     </div>
+
+    <div class="container mt-5">
+      <hr />
+      <h4 class="mb-3" style="text-align: center">내가 작성한 글 목록</h4>
+      <% post.forEach((result)=>{ %>
+      <li class="list-group-item justify-content-between align-items-center">
+        <h4 style="display: inline-block"><%= result.title %></h4>
+        <% if (result.type == "판매하기") { %>
+        <span class="badge badge-pill badge-success">판매희망</span>
+        <% } else if (result.type == "핫딜") { %>
+        <span class="badge badge-pill badge-danger">핫딜!!</span>
+        <% } else if (result.type == "구매하기") { %>
+        <span class="badge badge-pill badge-warning">구매희망</span>
+        <% } %>
+        <h5><%= result.price %>원</h5>
+        <p></p>
+        <p style="margin-bottom: 3px">작성자: <%= result.userId %></p>
+        <p>작성일: <%= result.date %></p>
+        <button
+          type="button"
+          class="btn btn-primary detail mr-2"
+          data-id="<%= result._id %>"
+        >
+          상세보기
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger delete mr-2"
+          data-id="<%= result._id %>"
+        >
+          삭제
+        </button>
+      </li>
+      <% }) %>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -67,15 +101,34 @@
         $.ajax({
           method: "post",
           url: "/user/logout",
-        })
-          .done((result) => {
-            console.log("로그아웃 성공");
-            alert("로그아웃에 성공했습니다.");
-            window.location.replace("/");
-          })
-          .fail((fail) => {
-            console.log("ajax 실패");
-          });
+        }).done((result) => {
+          alert("로그아웃에 성공했습니다.");
+          window.location.replace("/");
+        });
+      });
+
+      $(".delete").click(function (e) {
+        var postId = e.target.dataset.id;
+        $.ajax({
+          method: "DELETE",
+          url: "/posts",
+          data: { _id: postId },
+        }).done((result) => {
+          if (result == "different user") {
+            alert("작성자만 삭제가 가능합니다.");
+            window.location.reload();
+          } else if (result == true) {
+            $(this).parent("li").fadeOut();
+          } else {
+            alert("로그인이 필요합니다.");
+            window.location.replace("/user/login");
+          }
+        });
+      });
+
+      $(".detail").click(function (e) {
+        var postId = e.target.dataset.id;
+        window.location.replace("/posts/" + postId);
       });
     </script>
   </body>

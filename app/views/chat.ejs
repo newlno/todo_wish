@@ -15,46 +15,33 @@
       integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
       crossorigin="anonymous"
     />
-    <link
-      rel="stylesheet"
-      href="
-/public/main.css"
-    />
-    <title>Hello, world!</title>
+    <link rel="stylesheet" href="/public/main.css" />
+    <title>todo_wish</title>
   </head>
   <body>
     <%- include("nav.html") %>
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-4">채팅 페이지</h1>
+        <h1 class="display-4">todo_wish Message.</h1>
         <p class="lead"><%= userId %> 님 환영합니다.</p>
-
+        <p>1. 좌측 채팅방 목록에서 시작하고 싶은 채팅방을 클릭하세요.</p>
         <p>
-          This is a modified jumbotron that occupies the entire horizontal space
-          of its parent.
+          2. 나가고 싶은 채팅방을 클릭 후 나가기 버튼을 누르시면 모든 정보가
+          사라집니다.
         </p>
+        <p>3. 한번 나간 채팅방의 채팅기록은 복구가 불가능합니다.</p>
+        <p>4. 아름답고 바른 언어를 사용해주세요.</p>
+        <p>
+          5. 비속어 사용으로 다수 신고 접수시 해당 계정은 이용이 불가할 수
+          있습니다.
+        </p>
+        <p>3. 투두위시는 법적 대응에 협조를 잘해줍니다.</p>
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <div class="container p-4 detail">
       <div class="row">
-        <!-- <div class="col-3">
-          <div class="list-group">
-            <% data.forEach((result)=>{ %>
-            <button
-              type="button"
-              class="list-group-item list-group-item-action"
-              aria-current="true"
-              data-id=" <%= result._id %>"
-              id="joinRoom"
-            >
-              <h6 class="room-text"><%= result.title %></h6>
-              <h6 class="text-small">참여인원: <%= result.member %></h6>
-            </button>
-            <% }) %>
-          </div>
-        </div> -->
         <div class="col-3">
           <ul class="list-group chat-list">
             <% data.forEach((result,index)=>{ %>
@@ -74,14 +61,18 @@
 
         <div class="col-9 p-0">
           <div class="chat-room">
-            <ul class="list-group chat-content" id="content">
-              <!-- <li><span class="chat-box" id="content"></span></li> -->
-              <!-- <li><span class="chat-box mine">채팅방1 내용</span></li> -->
-            </ul>
+            <ul class="list-group chat-content" id="content"></ul>
             <div class="input-group">
               <input class="form-control" id="chatInput" />
-              <button class="btn btn-secondary" id="send">전송</button>
+              <button class="btn btn-success" id="send">전송</button>
             </div>
+            <button
+              type="button"
+              class="btn btn-warning btn-lg btn-block mt-3"
+              id="roomOut"
+            >
+              채팅방 나가기
+            </button>
           </div>
         </div>
       </div>
@@ -102,9 +93,44 @@
         socket.connect();
         roomId = $(this).attr("data-id");
         userId = $(this).attr("data-user");
-        console.log("클릭이벤트", roomId);
         $(".chat-content").html("");
-        socket.emit("joinRoom", { roomId: roomId, userId: userId });
+        socket.emit("joinRoom", { roomId: roomId });
+
+        $.ajax({
+          method: "post",
+          url: "/chat/list",
+          data: { roomId: roomId },
+        }).done((result) => {
+          var chatList = result.map((data, index) => {
+            return $("#content").append(
+              "<div>" +
+                data.userId +
+                "</div>" +
+                '<li><span class="chat-box">' +
+                data.message +
+                "</span></li>"
+            );
+          });
+        });
+      });
+
+      $("#roomOut").click(() => {
+        if (roomId == "") {
+          return alert("나가고 싶은 채팅방을 먼저 선택해주세요.");
+        }
+
+        $.ajax({
+          method: "delete",
+          url: "/chat/room",
+          data: { roomId: roomId },
+        })
+          .done((result) => {
+            alert("채팅방 나가기 성공");
+            return window.location.reload();
+          })
+          .fail((fail) => {
+            alert("채팅방 나가기 실패");
+          });
       });
 
       $("#send").click(() => {
@@ -113,12 +139,10 @@
           userId: userId,
           message: $("#chatInput").val(),
         };
-        console.log("메시지보내기", data);
         socket.emit("userSend", data);
       });
 
       socket.on("broadcast", (data) => {
-        console.log("클라이언트로 도착했나요?", data);
         $("#content").append(
           "<div>" +
             data.userId +
@@ -128,6 +152,7 @@
             "</span></li>"
         );
       });
+
       // SSE
       //   $.ajax({
       //       method: "get",

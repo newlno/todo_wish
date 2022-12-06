@@ -8,40 +8,114 @@
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     />
-    <title>Document</title>
+    <link rel="stylesheet" href="/public/main.css" />
+    <title>todo_wish</title>
   </head>
   <body>
     <%- include("nav.html") %>
-
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-4">포스팅 작성 페이지</h1>
-        <p class="lead">
-          This is a modified jumbotron that occupies the entire horizontal space
-          of its parent.
+        <h1 class="display-4">글 작성 유의사항</h1>
+        <p>1. 이미지 선택 후 꼭!! 이미지 등록하기 버튼을 눌러주세요!!</p>
+        <p>2. 이미지 등록을 완료해야 글 작성이 가능합니다.</p>
+        <p>
+          3. 다수의 신고가 접수된 글은 관리자에 의해 예고 없이 삭제될 수
+          있습니다.
         </p>
       </div>
     </div>
-
-    <div class="container mt-3">
-      <form action="/posts" method="post">
-        <div class="form-group">
-          <label>무엇을 계획하셨나요?</label>
-          <input type="text" class="form-control" name="title" />
+    <div class="container">
+      <form name="imageFile">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroupFileAddon01"
+              >Upload</span
+            >
+          </div>
+          <div class="custom-file">
+            <input
+              type="file"
+              name="image"
+              class="custom-file-input"
+              id="imageFile"
+              aria-describedby="inputGroupFileAddon01"
+              onchange="readURL(this);"
+            />
+            <label class="custom-file-label" for="inputGroupFile01"
+              >이곳을 눌러 업로드할 이미지를 선택해주세요</label
+            >
+          </div>
+        </div>
+      </form>
+      <div>
+        <img id="preview" />
+      </div>
+      <button type="button" class="btn btn-success btn-lg" id="image" disabled>
+        이미지 등록하기
+      </button>
+    </div>
+    <div class="container">
+      <form>
+        <div class="form-group mt-5">
+          <label>무엇을 구매 혹은 판매 하시나요?</label>
+          <input type="text" class="form-control" name="title" id="title" />
         </div>
         <div class="form-group">
-          <label>언제까지 완료하실건가요?</label>
-          <input type="text" class="form-control" name="day" />
+          <label>희망하시는 금액을 입력해주세요.</label>
+          <input type="number" class="form-control" name="price" id="price" />
         </div>
-        <button type="submit" class="btn btn-danger">Todo 만들기</button>
+        <div class="form-group">
+          <label for="exampleFormControlTextarea1"
+            >상품과 관련된 자세한 설명을 입력해주세요.</label
+          >
+          <div class="input-group">
+            <textarea
+              class="form-control"
+              aria-label="With textarea"
+              id="content"
+            ></textarea>
+          </div>
+          <!-- <input
+            type="text"
+            name="content"
+            class="form-control"
+            id="exampleFormControlTextarea1"
+            rows="3"
+          ></input> -->
+        </div>
+        <div class="form-group">
+          <label>판매하기</label>
+          <input
+            type="checkbox"
+            name="type"
+            value="판매하기"
+            id="checkType"
+            onclick="clickCheck(this)"
+          />
+          <label class="ml-4">구매하기</label>
+          <input
+            type="checkbox"
+            name="type"
+            value="구매하기"
+            id="checkType"
+            onclick="clickCheck(this)"
+          />
+          <label class="ml-4">핫딜 공유하기</label>
+          <input
+            type="checkbox"
+            name="type"
+            value="핫딜"
+            id="checkType"
+            onclick="clickCheck(this)"
+          />
+        </div>
+        <button type="button" class="btn btn-danger" id="write" disabled>
+          작성하기
+        </button>
       </form>
     </div>
 
-    <script
-      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
       integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
@@ -52,5 +126,86 @@
       integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
       crossorigin="anonymous"
     ></script>
+    <script>
+      var imgUrl;
+      var title;
+      var price;
+      var content;
+      var type;
+
+      function clickCheck(target) {
+        document
+          .querySelectorAll(`input[type=checkbox]`)
+          .forEach((el) => (el.checked = false));
+        target.checked = true;
+      }
+
+      function readURL(input) {
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            document.getElementById("preview").src = e.target.result;
+          };
+          reader.readAsDataURL(input.files[0]);
+          $("#image").prop("disabled", false);
+        } else {
+          document.getElementById("preview").src = "";
+        }
+      }
+
+      $("#image").click(function (e) {
+        var val = $("#imageFile")[0];
+
+        if (val == "") {
+          alert("이미지를 추가해주세요.");
+          return false;
+        }
+        var image = new FormData();
+        image.append("image", $("#imageFile")[0].files[0]);
+
+        $.ajax({
+          method: "post",
+          url: "/posts/image",
+          data: image,
+          processData: false,
+          contentType: false,
+          enctype: "multipart/form-data",
+        })
+          .done((result) => {
+            imgUrl = result;
+            alert("사진이 서버에 정상적으로 등록되었습니다.");
+            $("#write").prop("disabled", false);
+          })
+          .fail((fail) => {
+            alert("사진 업로드시 에러발생");
+          });
+      });
+
+      $("#write").click(function () {
+        title = $("#title").val();
+        price = $("#price").val();
+        content = $("#content").val();
+        type = $("input[name=type]:checked").val();
+
+        $.ajax({
+          method: "post",
+          url: "/posts",
+          data: {
+            title: title,
+            price: price,
+            content: content,
+            type: type,
+            image: imgUrl,
+          },
+        })
+          .done((result) => {
+            alert("작성 완료!");
+            window.location.replace("/");
+          })
+          .fail((fail) => {
+            alert("정상적인 접근이 아닙니다.");
+          });
+      });
+    </script>
   </body>
 </html>

@@ -11,28 +11,22 @@ var checkPw =
 const check = {
   checkMail(parma) {
     if (!parma.match(checkMail)) {
-      console.log("메일 벨리뎃 페일");
       return false;
     } else {
-      console.log("메일 벨리뎃 트루");
       return true;
     }
   },
   checkId(parma) {
     if (!parma.match(checkId)) {
-      console.log("아이디 벨리뎃 페일");
       return false;
     } else {
-      console.log("아이디 벨리뎃 트루");
       return true;
     }
   },
   checkPw(parma) {
     if (!parma.match(checkPw)) {
-      console.log("비번 벨리뎃 페일");
       return false;
     } else {
-      console.log("비번 벨리뎃 트루");
       return true;
     }
   },
@@ -41,7 +35,6 @@ const check = {
 // 로그인 검증
 const loginCheck = (req, res, next) => {
   if (req.user) {
-    console.log("로그인체크 지나감");
     next();
   } else {
     return res.send(

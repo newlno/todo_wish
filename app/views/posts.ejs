@@ -16,17 +16,16 @@
       crossorigin="anonymous"
     />
 
-    <title>Hello, world!</title>
+    <title>todo_wish</title>
   </head>
   <body>
     <%- include("nav.html") %>
     <div class="jumbotron jumbotron-fluid">
       <div class="container">
-        <h1 class="display-4">홈 + 리스트 페이지</h1>
-        <p class="lead">
-          This is a modified jumbotron that occupies the entire horizontal space
-          of its parent.
-        </p>
+        <h1 class="display-4">todo_wish</h1>
+        <p>1. 내가 구매하고 싶은 물건을 찾아서 중고로 구매해보세요.</p>
+        <p>2. 내가 판매하고 싶은 물건을 올려서 중고로 판매해보세요.</p>
+        <p>3. 핫딜 상품을 다른 사람들에게 공유해주세요.</p>
       </div>
     </div>
     <div class="container input-group mb-5">
@@ -35,8 +34,8 @@
         placeholder="검색어를 입력해주세요."
         id="searchInput"
       />
-      <button class="input-group-append btn btn-danger" id="search">
-        검색
+      <button class="input-group-append btn btn-info" id="search">
+        검색하기
       </button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
@@ -45,32 +44,39 @@
       <ul class="list-group">
         <% posts.forEach((result)=>{ %>
         <li class="list-group-item justify-content-between align-items-center">
-          <h4 style="display: inline-block">
-            무언가 나옵니다! -> <%= result.title %>
-          </h4>
-          <p class="badge badge-primary badge-pill">14</p>
-          <p>마감일 나옵니다! -> <%= result.day %></p>
+          <h4 style="display: inline-block"><%= result.title %></h4>
+          <% if (result.type == "판매하기") { %>
+          <span class="badge badge-pill badge-success">판매희망</span>
+          <% } else if (result.type == "핫딜") { %>
+          <span class="badge badge-pill badge-danger">핫딜!!</span>
+          <% } else if (result.type == "구매하기") { %>
+          <span class="badge badge-pill badge-warning">구매희망</span>
+          <% } %>
+          <h5><%= result.price %>원</h5>
+          <p></p>
+          <p style="margin-bottom: 3px">작성자: <%= result.userId %></p>
+          <p>작성일: <%= result.date %></p>
           <button
             type="button"
-            class="btn btn-danger"
+            class="btn btn-primary detail mr-2"
             data-id="<%= result._id %>"
           >
             상세보기
           </button>
           <button
             type="button"
-            class="btn btn-danger delete"
-            data-id="<%= result._id %>"
-          >
-            삭제하기
-          </button>
-          <button
-            type="button"
-            class="btn btn-danger chat"
+            class="btn btn-dark chat mr-2"
             data-title="<%= result.title %>"
             data-id="<%= result.userId %>"
           >
-            채팅하기
+            1:1 채팅하기
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger delete mr-2"
+            data-id="<%= result._id %>"
+          >
+            삭제
           </button>
         </li>
         <% }) %>
@@ -85,43 +91,49 @@
       $(".delete").click(function (e) {
         var postId = e.target.dataset.id;
         $.ajax({
-          method: "delete",
+          method: "DELETE",
           url: "/posts",
           data: { _id: postId },
-        })
-          .done((result) => {
-            if ((result = "different user")) {
-              alert("작성자만 삭제가 가능합니다.");
-              window.location.reload();
-            }
-            console.log("ajax 성공");
+        }).done((result) => {
+          if (result == "different user") {
+            alert("작성자만 삭제가 가능합니다.");
+            window.location.reload();
+          } else if (result == true) {
             $(this).parent("li").fadeOut();
-          })
-          .fail((fail) => {
-            console.log("ajax 실패");
-          });
+          } else {
+            alert("로그인이 필요합니다.");
+            window.location.replace("/user/login");
+          }
+        });
+      });
+
+      $(".detail").click(function (e) {
+        var postId = e.target.dataset.id;
+        window.location.replace("/posts/" + postId);
       });
 
       $(".chat").click(function (e) {
         var title = e.target.dataset.title;
-        console.log("채팅 타이틀", title);
         var user = e.target.dataset.id;
         $.ajax({
           method: "post",
           url: "/chat/room",
           data: { title: title, roomUser: user },
         }).done((result) => {
-          console.log("채팅성공");
-          window.location.replace("/chat");
+          if (result == true) {
+            window.location.replace("/chat");
+          } else if (result == "me") {
+            alert("혼자하는 채팅 보다 둘이하는 채팅이 더 좋습니다.");
+            window.location.reload();
+          } else if (result == "notnull") {
+            alert("기존 채팅방을 확인해주세요.");
+            window.location.replace("/chat");
+          } else {
+            alert("로그인이 필요합니다.");
+            window.location.replace("/user/login");
+          }
         });
       });
-
-      // $(".chat").click(function (e) {
-      //   var user = e.target.dataset.id;
-      //   $.post("/chatroom", { roomUser: user }).then(() => {
-      //     console.log("에이젝스 채팅 성공");
-      //   });
-      // });
     </script>
   </body>
 </html>

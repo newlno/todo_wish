@@ -25,11 +25,9 @@ let mail = {
 
     const send = async (data) => {
       mailer.createTransport(email).sendMail(data, function (error, info) {
-        console.log(email);
         if (error) {
-          console.log(error);
+          console.error(error);
         } else {
-          console.log(info);
           return info.response;
         }
       });

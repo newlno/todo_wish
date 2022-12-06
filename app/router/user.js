@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const mail = require("../config/mail");
 const validator = require("../config/validator");
 
 const UserController = require("../controller/user");
@@ -12,8 +11,7 @@ router.post(
   "/login",
   // passport모듈을 직접 사용해야함 passport.use 로 넘어감
   passport.authenticate("local-login", {
-    failureRedirect: "/user/signup",
-    failureFlash: true,
+    failureRedirect: "/user/login",
   }),
   userController.login
 );
